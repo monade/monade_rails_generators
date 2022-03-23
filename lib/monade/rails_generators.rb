@@ -1,0 +1,2 @@
+module Monade::RailsGenerators
+end
