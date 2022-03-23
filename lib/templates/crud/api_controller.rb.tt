@@ -1,0 +1,48 @@
+<% if namespaced? -%>
+require_dependency "<%= namespaced_path %>/application_controller"
+
+<% end -%>
+<% module_namespacing do -%>
+class <%=controller_class_name %>Controller < ApplicationController
+	load_and_authorize_resources
+
+  def index
+	  @<%= plural_table_name %> = @<%= plural_table_name %>.query_by(params)
+    render_default! <%= "@#{plural_table_name}" %>, meta: pagination_meta(<%= "@#{plural_table_name}" %>)
+  end
+
+  def show
+    render_default! <%= "@#{singular_table_name}" %>
+  end
+
+  def create
+    default! <%= "@#{singular_table_name}" %>
+  end
+
+  def update
+    default!  <%= "@#{singular_table_name}" %>
+  end
+
+  def destroy
+    default!  <%= "@#{singular_table_name}" %>
+  end
+
+  private
+    # Only allow a list of trusted parameters through.
+    def <%= "update_params" %>
+      <%- if attributes_names.empty? -%>
+      params.fetch(:<%= singular_table_name %>, {})
+      <%- else -%>
+      params.permit(<%= permitted_params %>)
+      <%- end -%>
+    end
+
+		def <%= "create_params" %>
+      <%- if attributes_names.empty? -%>
+      params.fetch(:<%= singular_table_name %>, {})
+      <%- else -%>
+      params.permit(<%= permitted_params %>)
+      <%- end -%>
+    end
+end
+<% end -%>
