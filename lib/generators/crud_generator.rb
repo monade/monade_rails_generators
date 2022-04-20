@@ -17,15 +17,16 @@ class CrudGenerator < Rails::Generators::NamedBase
 
   desc "This generator creates a model"
   def create_model_file
-    template "active_record/model/model.rb.tt", "app/model/#{file_name}.rb"
+    template "active_record/model/model.rb.tt", "app/models/#{file_name}.rb"
   end
 
   def create_factory_file
     # TODO: guardare factory bot come fa?
   end
 
+  desc "This generates the model unit test file"
   def create_model_spec_file
-    # TODO: Implement this
+    template "rspec/model/model_spec.rb.tt", "spec/models/#{file_name}_spec.rb"
   end
 
   def create_controller_file
