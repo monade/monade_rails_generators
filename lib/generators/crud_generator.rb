@@ -28,16 +28,18 @@ class CrudGenerator < Rails::Generators::NamedBase
     # TODO: Implement this
   end
 
+  desc "This generator creates a controller"
   def create_controller_file
-    # TODO: Implement this
+    template "active_record/controller/api_controller.rb.tt", "app/controllers/api/v1/#{table_name}_controller.rb"
   end
 
   def create_rswag_file
     # TODO: Implement this
   end
 
+  desc "This generator creates a serializer"
   def create_serializer_file
-    # TODO: Guardare active model serializer come fa?
+    template "active_record/serializer/serializer.rb.tt", "app/serializers/#{file_name}.rb"
   end
 
   def create_routes_file
@@ -45,6 +47,10 @@ class CrudGenerator < Rails::Generators::NamedBase
   end
 
   private
+
+  def permitted_params
+    attributes.map { |attr| ":#{attr.name}" }.join(',')
+  end
 
   def parent_class_name
     if parent
