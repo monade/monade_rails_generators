@@ -9,11 +9,39 @@ class CrudGenerator < Rails::Generators::NamedBase
 
   class_option :parent, type: :string, desc: "The parent class for the generated model"
 
-  desc "This generator creates a crud"
-  def create_crud_file
-    # fail 'funziona'
-    # create_file "app/model/test.rb", "CIAO"
+  desc "This generator creates a migration"
+  def create_migration_file
+    raw_attrs = attributes.map { |attr| "#{attr.name}:#{attr.type}" }
+    generate 'migration', "Create#{class_name.pluralize.classify}", *raw_attrs, migration_name: "create_#{table_name}"
+  end
+
+  desc "This generator creates a model"
+  def create_model_file
     template "active_record/model/model.rb.tt", "app/model/#{file_name}.rb"
+  end
+
+  def create_factory_file
+    # TODO: guardare factory bot come fa?
+  end
+
+  def create_model_spec_file
+    # TODO: Implement this
+  end
+
+  def create_controller_file
+    # TODO: Implement this
+  end
+
+  def create_rswag_file
+    # TODO: Implement this
+  end
+
+  def create_serializer_file
+    # TODO: Guardare active model serializer come fa?
+  end
+
+  def create_routes_file
+    # TODO: Aggiungere alle rotte il api_resources
   end
 
   private
