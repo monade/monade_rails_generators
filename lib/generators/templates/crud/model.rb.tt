@@ -1,0 +1,30 @@
+<% module_namespacing do -%>
+class <%= class_name %> < <%= parent_class_name.classify %>
+<% attributes.select {|attr| attr.reference? }.each do |attribute| -%>
+  belongs_to :<%= attribute.name %><%= ', polymorphic: true' if attribute.polymorphic? %>
+<% end -%>
+
+  as_queryable
+  queryable filter: [<%= attributes.select{|n| n.type==:string}.map{|n| ":#{n.name}"}.join(', ') %>]
+  <% attributes.select{|attr| attr.type==:string}.each do |attribute| -%>
+  scope :of_<%= attribute.name %>, lambda { |<%= attribute.name %>|
+    table = <%= class_name %>.arel_table
+    where(table[:<%= attribute.name %>].matches("%#{<%= attribute.name %>}%"))
+  }
+  <% end -%>
+
+
+
+  scope :of_term, lambda { |term|
+    table = <%= class_name %>.arel_table
+    <% attributes.select{|attr| attr.type==:string}.each_with_index do |attribute, index| -%>
+    <% if index.zero?-%>
+       where(table[:<%= attribute.name %>].matches("%#{term}%"))
+    <% else -%>
+      .or(where(table[:<%= attribute.name %>].matches("%#{term}%")))
+    <% end -%>
+    <% end -%>
+  }
+
+  end
+  <% end -%>
