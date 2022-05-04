@@ -17,7 +17,7 @@ class CrudGenerator < Rails::Generators::NamedBase
 
   desc "This generator creates a model"
   def create_model_file
-    template "active_record/model/model.rb.tt", "app/model/#{file_name}.rb"
+    template "active_record/model/model.rb.tt", "app/models/#{file_name}.rb"
   end
 
   def create_factory_file

@@ -13,8 +13,6 @@ class <%= class_name %> < <%= parent_class_name.classify %>
   }
   <% end -%>
 
-
-
   scope :of_term, lambda { |term|
     table = <%= class_name %>.arel_table
     <% attributes.select{|attr| attr.type==:string}.each_with_index do |attribute, index| -%>
