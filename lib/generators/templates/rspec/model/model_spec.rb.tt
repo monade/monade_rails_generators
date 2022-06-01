@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 <% module_namespacing do -%>
-RSpec.describe <%= class_name %>, <%= type_metatag(:model) %> do
+RSpec.describe <%= class_name %>, type: :model do
   check_validations!
   validate_associations!
 end

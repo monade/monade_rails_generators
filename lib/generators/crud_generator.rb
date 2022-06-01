@@ -20,12 +20,14 @@ class CrudGenerator < Rails::Generators::NamedBase
     template "active_record/model/model.rb.tt", "app/models/#{file_name}.rb"
   end
 
-  def create_factory_file
-    # TODO: guardare factory bot come fa?
+  desc "This generates the model unit test file"
+  def create_model_spec_file
+    template "rspec/model/model_spec.rb.tt", "spec/models/#{file_name}_spec.rb"
   end
 
-  def create_model_spec_file
-    # TODO: Implement this
+  desc "this generates the factory bot model"
+  def create_factory_file
+    template "rspec/factory_bot/factory_bot.rb.tt", "spec/factories/#{class_name.gsub("::", "").pluralize.underscore}.rb"
   end
 
   desc "This generator creates a controller"
