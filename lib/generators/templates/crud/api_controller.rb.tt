@@ -28,7 +28,6 @@ class <%=controller_class_name %>Controller < ApplicationController
   end
 
   private
-    # Only allow a list of trusted parameters through.
   def <%= "update_params" %>
     <%- if attributes_names.empty? -%>
     params.fetch(:<%= singular_table_name %>, {})

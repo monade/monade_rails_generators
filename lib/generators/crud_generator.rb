@@ -35,8 +35,9 @@ class CrudGenerator < Rails::Generators::NamedBase
     template "active_record/controller/api_controller.rb.tt", "app/controllers/api/v1/#{table_name}_controller.rb"
   end
 
+  desc "This generates the rswag test file"
   def create_rswag_file
-    # TODO: Implement this
+    template "rspec/request/request_spec.rb.tt", "spec/requests/v1/#{file_name}_spec.rb"
   end
 
   desc "This generator creates a serializer"

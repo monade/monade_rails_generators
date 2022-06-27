@@ -1,0 +1,175 @@
+require 'swagger_helper'
+
+<% module_namespacing do -%>
+RSpec.describe 'Api::V1::<%= class_name.pluralize.capitalize %>', type: :request do
+
+  path '/api/v1/<%= class_name.pluralize.downcase %>' do
+    get 'loads all <%= class_name.pluralize.downcase %> records' do
+      parameter name: :'page[size]', type: :string, in: :query, required: false
+      consumes 'application/json', 'application/x-www-form-urlencoded'
+      produces 'application/json'
+
+      let!(:<%= class_name.pluralize.downcase %>) { create_list(:<%= class_name.downcase %>, 15) }
+
+      response '200', 'Returns the list of <%= class_name.pluralize.downcase %>' do
+        schema '$ref' => '#/components/schemas/json_api_array'
+        run_test! do
+          expect(json).to match_structure(
+            data: a_list_of(
+              type: String, attributes: { <%= attributes.map{|attr|
+              if attr.type ==:integer || attr.type==:float || attr.type==:decimal
+                "#{attr.name.camelize(:lower)}: Numeric"
+              elsif attr.type==:string || attr.type==:text
+                "#{attr.name.camelize(:lower)}: String"
+              end
+              }.join(',') %> }
+            ).with(15).elements
+          )
+        end
+      end
+
+    post 'creates a <%= class_name.downcase %> record' do
+      consumes 'application/json', 'application/x-www-form-urlencoded'
+      produces 'application/json'
+
+      parameter name: :params, in: :body, schema: {
+        type: :object,
+        properties:
+
+          { <%= attributes.map{|attr|
+              if attr.type ==:integer || attr.type==:float || attr.type==:decimal
+                "#{attr.name}: {type: :numeric}"
+              elsif attr.type==:string || attr.type==:text
+                 "#{attr.name}: {type: :string}"
+              end
+              }.join(',') %>
+          }
+      }
+      let(:params) {
+         { <%= attributes.map{|attr|
+              if attr.type ==:integer
+                "#{attr.name}: '#{rand(100)}'"
+              elsif attr.type==:float || attr.type==:decimal
+                "#{attr.name}: '#{rand(100)}'"
+              elsif attr.type==:string || attr.type==:text
+                 "#{attr.name}: '#{SecureRandom.base64}'"
+              end
+              }.join(',') %> }
+      }
+      schema '$ref' => '#/components/schemas/json_api_object'
+        run_test! do
+          expect(json).to match_structure(
+            data: {
+              id: String, type: '<%= class_name.pluralize.downcase %>',
+              attributes: {
+                <%= attributes.map{|attr|
+              if attr.type==:float || attr.type==:decimal
+                 "#{attr.name.camelize(:lower)}: params[:#{attr.name}].to_s"
+              elsif attr.type==:string || attr.type==:text || attr.type ==:integer
+                  "#{attr.name.camelize(:lower)}: params[:#{attr.name}].to_s"
+              end
+              }.join(',') %>
+              }
+            }
+          )
+        end
+      end
+    end
+  end
+
+  path '/api/v1/<%= class_name.pluralize.downcase %>/{id}' do
+    get 'loads a <%= class_name.downcase %> record' do
+      consumes 'application/json', 'application/x-www-form-urlencoded'
+      produces 'application/json'
+      parameter name: 'id', in: :path, type: :string, required: true
+      let!(:id) { create(:<%= class_name.downcase %>).id }
+
+      response '200', 'Returns the details of a <%= class_name.pluralize.downcase %>' do
+          schema '$ref' => '#/components/schemas/json_api_object'
+
+        run_test! do
+          expect(json).to match_structure(
+            data: {
+              attributes: { <%= attributes.map{|attr|
+            if attr.type ==:integer || attr.type==:float || attr.type==:decimal
+              "#{attr.name.camelize(:lower)}: Numeric"
+            elsif attr.type==:string || attr.type==:text
+              "#{attr.name.camelize(:lower)}: String"
+            end
+            }.join(',') %> }
+            }
+          )
+        end
+      end
+    end
+
+
+    delete 'deletes a <%= class_name.downcase %>' do
+      consumes 'application/json', 'application/x-www-form-urlencoded'
+      produces 'application/json'
+
+      let!(:<%= class_name.downcase %>) { create(:<%= class_name.downcase %>) }
+
+      response '200', 'deletes a <%= class_name.pluralize.downcase %>' do
+        let!(:id) {<%= class_name.downcase %>.id }
+        schema '$ref' => '#/components/schemas/json_api_object'
+        run_test! do
+          expect(json).to match_structure(data: { id: id })
+          expect { <%= class_name.downcase %>.reload }.to raise_error(ActiveRecord::RecordNotFound)
+        end
+      end
+    end
+
+    put 'updates a <%= class_name.pluralize.downcase %>' do
+      consumes 'application/json', 'application/x-www-form-urlencoded'
+      produces 'application/json'
+
+      parameter name: :params, in: :body, schema: {
+        type: :object,
+        properties:
+
+          { <%= attributes.map{|attr|
+              if attr.type ==:integer || attr.type==:float || attr.type==:decimal
+                "#{attr.name}: {type: :numeric}"
+              elsif attr.type==:string || attr.type==:text
+                 "#{attr.name}: {type: :string}"
+              end
+              }.join(',') %>
+          }
+      }
+
+     let(:params) {
+         { <%= attributes.map{|attr|
+              if attr.type ==:integer
+                "#{attr.name}: '#{rand(100)}'"
+              elsif attr.type==:float || attr.type==:decimal
+                "#{attr.name}: '#{rand(100)}'"
+              elsif attr.type==:string || attr.type==:text
+                 "#{attr.name}: '#{SecureRandom.base64}'"
+              end
+              }.join(',') %> }
+      }
+
+      response '200', 'updates an answer' do
+        schema '$ref' => '#/components/schemas/json_api_object'
+        run_test! do
+          expect(json).to match_structure(
+            data: {
+              attributes: {
+                <%= attributes.map{|attr|
+              if attr.type==:float || attr.type==:decimal
+                 "#{attr.name.camelize(:lower)}: params[:#{attr.name}].to_s"
+              elsif attr.type==:string || attr.type==:text || attr.type ==:integer
+                  "#{attr.name.camelize(:lower)}: params[:#{attr.name}].to_s"
+              end
+              }.join(',') %>
+              }
+            }
+          )
+        end
+      end
+    end
+  end
+end
+<% end -%>
+

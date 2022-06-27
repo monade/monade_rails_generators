@@ -7,7 +7,7 @@ FactoryBot.define do
     association(:<%= attribute.name %>)
 <% end -%>
 <% attributes.select{|attr| attr.type==:string || attr.type==:text}.each do |attribute| -%>
-    sequence(:<%= attribute.name %>) {|n| "MyString #{n}"}
+    sequence(:<%= attribute.name %>) {|n| "attr.name.capitalize #{n}"}
 <% end -%>
 <% attributes.select{ |attr| attr.type ==:integer || attr.type==:float || attr.type==:decimal}.each do |attribute| -%>
     <%= attribute.name %> { 0 }
