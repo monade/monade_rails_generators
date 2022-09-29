@@ -1,0 +1,48 @@
+<% if namespaced? -%>
+require_dependency "<%= namespaced_path %>/application_controller"
+
+<% end -%>
+<% module_namespacing do -%>
+class V1::<%=plural_name.classify.pluralize%>Controller < ApplicationController
+  load_and_authorize_resource
+
+  def index
+    @<%= plural_table_name %> = @<%= plural_table_name %>.query_by(params)
+    default! <%= "@#{plural_table_name}" %>, meta: pagination_meta(<%= "@#{plural_table_name}" %>)
+  end
+
+  def show
+    default! <%= "@#{singular_table_name}" %>
+  end
+
+  def create
+    default! <%= "@#{singular_table_name}" %>, status: :created
+  end
+
+  def update
+    default!  <%= "@#{singular_table_name}" %>
+  end
+
+  def destroy
+    default!  <%= "@#{singular_table_name}" %>
+  end
+
+  private
+
+  def <%= "update_params" %>
+    <%- if attributes_names.empty? -%>
+    params.fetch(:<%= singular_table_name %>, {})
+    <%- else -%>
+    params.permit(<%= permitted_params %>)
+    <%- end -%>
+  end
+
+  def <%= "create_params" %>
+    <%- if attributes_names.empty? -%>
+    params.fetch(:<%= singular_table_name %>, {})
+    <%- else -%>
+    params.permit(<%= permitted_params %>)
+    <%- end -%>
+  end
+end
+<% end -%>
