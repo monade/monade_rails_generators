@@ -1,73 +1,96 @@
 require 'swagger_helper'
 
 <% module_namespacing do -%>
-RSpec.describe 'Api::V1::<%= class_name.pluralize.capitalize %>', type: :request do
+RSpec.describe 'V1::<%= class_name.pluralize %>', type: :request do
 
-  path '/api/v1/<%= class_name.pluralize.downcase %>' do
-    get 'loads all <%= class_name.pluralize.downcase %> records' do
-      parameter name: :'page[size]', type: :string, in: :query, required: false
-      consumes 'application/json', 'application/x-www-form-urlencoded'
-      produces 'application/json'
+  path '/v1/<%= class_name.pluralize.underscore %>' do
+    get 'when running a GET request' do
+      define_json_api_params!(pagination: true)
+      let(:'page[size]') { 2 }
 
-      let!(:<%= class_name.pluralize.downcase %>) { create_list(:<%= class_name.downcase %>, 15) }
+      let!(:<%= class_name.pluralize.underscore %>) { create_list(:<%= class_name.underscore %>, 5) }
 
-      response '200', 'Returns the list of <%= class_name.pluralize.downcase %>' do
-        schema '$ref' => '#/components/schemas/json_api_array'
+      response '200', 'returns the list of <%= class_name.pluralize.underscore %>' do
+        schema json_list('<%= class_name.underscore %>')
         run_test! do
           expect(json).to match_structure(
             data: a_list_of(
-              type: String, attributes: { <%= attributes.map{|attr|
-              if attr.type ==:integer || attr.type==:float || attr.type==:decimal
+              type: String, attributes: {
+              <%= attributes.map { |attr|
+              if attr.type ==:integer || attr.type==:float
                 "#{attr.name.camelize(:lower)}: Numeric"
-              elsif attr.type==:string || attr.type==:text
+              elsif attr.type==:string || attr.type==:text || attr.type==:decimal
                 "#{attr.name.camelize(:lower)}: String"
+              elsif attr.type == :boolean
+                "#{attr.name.camelize(:lower)}: one_of(true, false)"
+              else
+                "#{attr.name.camelize(:lower)}: Object"
               end
-              }.join(',') %> }
-            ).with(15).elements
+              }.join(', ') %>
+              }
+            ).with(2).elements
           )
         end
       end
+    end
 
-    post 'creates a <%= class_name.downcase %> record' do
-      consumes 'application/json', 'application/x-www-form-urlencoded'
-      produces 'application/json'
+    post 'when running a POST request' do
+      define_json_api_params!
 
       parameter name: :params, in: :body, schema: {
         type: :object,
-        properties:
-
-          { <%= attributes.map{|attr|
-              if attr.type ==:integer || attr.type==:float || attr.type==:decimal
+        properties: {
+          <%= attributes.map { |attr|
+              case attr.type
+              when :integer, :float, :decimal
                 "#{attr.name}: {type: :numeric}"
-              elsif attr.type==:string || attr.type==:text
+              when :string, :text
                  "#{attr.name}: {type: :string}"
+              when :boolean
+                "#{attr.name}: {type: :boolean}"
+              else
+                 "#{attr.name}: {type: :object}"
               end
               }.join(',') %>
           }
       }
-      let(:params) {
-         { <%= attributes.map{|attr|
-              if attr.type ==:integer
-                "#{attr.name}: '#{rand(100)}'"
-              elsif attr.type==:float || attr.type==:decimal
-                "#{attr.name}: '#{rand(100)}'"
-              elsif attr.type==:string || attr.type==:text
-                 "#{attr.name}: '#{SecureRandom.base64}'"
+      let(:params) do
+         { <%= attributes.map.with_index {|attr, i|
+              case attr.type
+              when :integer
+                "#{attr.name}: #{rand(100)}"
+              when :decimal
+                "#{attr.name}: '#{rand(10000) / 100.0}'"
+              when :float
+                "#{attr.name}: #{rand(10000) / 100.0}"
+              when :string, :text
+                 "#{attr.name}: '#{attr.name.humanize} #{i}'"
+              when :boolean
+                 "#{attr.name}: #{[true,false].sample}"
+              else
+                 "#{attr.name}: {}"
               end
               }.join(',') %> }
-      }
-      schema '$ref' => '#/components/schemas/json_api_object'
+      end
+      response '201', 'creates a new <%= class_name.humanize %>' do
+        schema json_single('<%= class_name.underscore %>')
+
         run_test! do
           expect(json).to match_structure(
             data: {
-              id: String, type: '<%= class_name.pluralize.downcase %>',
+              id: String, type: '<%= class_name.pluralize.camelize(:lower) %>',
               attributes: {
                 <%= attributes.map{|attr|
-              if attr.type==:float || attr.type==:decimal
+                case attr.type
+                when :decimal
                  "#{attr.name.camelize(:lower)}: params[:#{attr.name}].to_s"
-              elsif attr.type==:string || attr.type==:text || attr.type ==:integer
+                when :float, :integer
+                 "#{attr.name.camelize(:lower)}: params[:#{attr.name}]"
+                when :string, :text
                   "#{attr.name.camelize(:lower)}: params[:#{attr.name}].to_s"
-              end
+                else
+                 "#{attr.name.camelize(:lower)}: params[:#{attr.name}]"
+                end
               }.join(',') %>
               }
             }
@@ -77,26 +100,36 @@ RSpec.describe 'Api::V1::<%= class_name.pluralize.capitalize %>', type: :request
     end
   end
 
-  path '/api/v1/<%= class_name.pluralize.downcase %>/{id}' do
-    get 'loads a <%= class_name.downcase %> record' do
-      consumes 'application/json', 'application/x-www-form-urlencoded'
-      produces 'application/json'
-      parameter name: 'id', in: :path, type: :string, required: true
-      let!(:id) { create(:<%= class_name.downcase %>).id }
+  path '/v1/<%= class_name.pluralize.underscore %>/{id}' do
+    parameter name: 'id', in: :path, type: :string, required: true
+    let!(:id) { create(:<%= class_name.underscore %>).id }
 
-      response '200', 'Returns the details of a <%= class_name.pluralize.downcase %>' do
-          schema '$ref' => '#/components/schemas/json_api_object'
+    get 'when running a GET request' do
+      define_json_api_params!
+
+      response '200', 'Returns the details of a <%= class_name.downcase.humanize %>' do
+        schema json_single('<%= class_name.underscore %>')
 
         run_test! do
           expect(json).to match_structure(
             data: {
-              attributes: { <%= attributes.map{|attr|
-            if attr.type ==:integer || attr.type==:float || attr.type==:decimal
-              "#{attr.name.camelize(:lower)}: Numeric"
-            elsif attr.type==:string || attr.type==:text
-              "#{attr.name.camelize(:lower)}: String"
-            end
-            }.join(',') %> }
+              id: id.to_s, type: String,
+              attributes: {
+                <%=
+                  attributes.map{|attr|
+                    case attr.type
+                    when :integer, :float
+                      "#{attr.name.camelize(:lower)}: Numeric"
+                    when :string, :text, :decimal
+                      "#{attr.name.camelize(:lower)}: String"
+                    when :boolean
+                      "#{attr.name.camelize(:lower)}: one_of(true, false)"
+                    else
+                      "#{attr.name.camelize(:lower)}: Object"
+                    end
+                  }.join(',')
+                %>
+              }
             }
           )
         end
@@ -104,65 +137,79 @@ RSpec.describe 'Api::V1::<%= class_name.pluralize.capitalize %>', type: :request
     end
 
 
-    delete 'deletes a <%= class_name.downcase %>' do
-      consumes 'application/json', 'application/x-www-form-urlencoded'
-      produces 'application/json'
+    delete 'when running a DELETE request' do
+      define_json_api_params!
 
-      let!(:<%= class_name.downcase %>) { create(:<%= class_name.downcase %>) }
+      let!(:<%= class_name.underscore %>) { create(:<%= class_name.underscore %>) }
 
-      response '200', 'deletes a <%= class_name.pluralize.downcase %>' do
-        let!(:id) {<%= class_name.downcase %>.id }
-        schema '$ref' => '#/components/schemas/json_api_object'
+      response '200', 'deletes a <%= class_name.downcase.humanize %>' do
+        schema json_single('<%= class_name.underscore %>')
+
+        let!(:id) {<%= class_name.underscore %>.id }
         run_test! do
-          expect(json).to match_structure(data: { id: id })
-          expect { <%= class_name.downcase %>.reload }.to raise_error(ActiveRecord::RecordNotFound)
+          expect(json).to match_structure(data: { id: id.to_s })
+          expect { <%= class_name.underscore %>.reload }.to raise_error(ActiveRecord::RecordNotFound)
         end
       end
     end
 
-    put 'updates a <%= class_name.pluralize.downcase %>' do
-      consumes 'application/json', 'application/x-www-form-urlencoded'
-      produces 'application/json'
+    put 'when running a PUT request' do
+      define_json_api_params!
 
       parameter name: :params, in: :body, schema: {
         type: :object,
-        properties:
-
-          { <%= attributes.map{|attr|
+        properties: {
+          <%= attributes.map{|attr|
               if attr.type ==:integer || attr.type==:float || attr.type==:decimal
                 "#{attr.name}: {type: :numeric}"
               elsif attr.type==:string || attr.type==:text
                  "#{attr.name}: {type: :string}"
+              elsif attr.type == :boolean
+                "#{attr.name}: {type: :boolean}"
+              else
+                "#{attr.name}: {type: :object}"
               end
-              }.join(',') %>
-          }
+              }.join(",\n          ") %>
+        }
       }
 
-     let(:params) {
-         { <%= attributes.map{|attr|
-              if attr.type ==:integer
-                "#{attr.name}: '#{rand(100)}'"
-              elsif attr.type==:float || attr.type==:decimal
-                "#{attr.name}: '#{rand(100)}'"
-              elsif attr.type==:string || attr.type==:text
-                 "#{attr.name}: '#{SecureRandom.base64}'"
-              end
-              }.join(',') %> }
-      }
+     let(:params) do
+        {
+          <%= attributes.map.with_index { |attr, i|
+            if attr.type ==:decimal
+              "#{attr.name}: '#{rand(10000)}'"
+            elsif attr.type==:float || attr.type==:integer
+              "#{attr.name}: #{rand(100)}"
+            elsif attr.type==:string || attr.type==:text
+              "#{attr.name}: '#{attr.name.humanize} #{i}'"
+            elsif attr.type == :boolean
+              "#{attr.name}: #{[true,false].sample}"
+            else
+              "#{attr.name}: {}"
+            end
+            }.join(",\n          ") %>
+        }
+      end
 
-      response '200', 'updates an answer' do
-        schema '$ref' => '#/components/schemas/json_api_object'
+      response '200', 'updates a <%= class_name.downcase.humanize %>' do
+        schema json_single('<%= class_name.underscore %>')
         run_test! do
           expect(json).to match_structure(
             data: {
+              id: id.to_s, type: String,
               attributes: {
                 <%= attributes.map{|attr|
-              if attr.type==:float || attr.type==:decimal
+                case attr.type
+                when :decimal
                  "#{attr.name.camelize(:lower)}: params[:#{attr.name}].to_s"
-              elsif attr.type==:string || attr.type==:text || attr.type ==:integer
+                when :float, :integer
+                 "#{attr.name.camelize(:lower)}: params[:#{attr.name}]"
+                when :string, :text
                   "#{attr.name.camelize(:lower)}: params[:#{attr.name}].to_s"
-              end
-              }.join(',') %>
+                else
+                 "#{attr.name.camelize(:lower)}: params[:#{attr.name}]"
+                end
+              }.join(",\n                ") %>
               }
             }
           )

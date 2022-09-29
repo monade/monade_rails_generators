@@ -3,16 +3,16 @@ require_dependency "<%= namespaced_path %>/application_controller"
 
 <% end -%>
 <% module_namespacing do -%>
-class <%=controller_class_name %>Controller < ApplicationController
-  load_and_authorize_resources
+class V1::<%=controller_class_name %>Controller < ApplicationController
+  load_and_authorize_resource
 
   def index
     @<%= plural_table_name %> = @<%= plural_table_name %>.query_by(params)
-    render_default! <%= "@#{plural_table_name}" %>, meta: pagination_meta(<%= "@#{plural_table_name}" %>)
+    default! <%= "@#{plural_table_name}" %>, meta: pagination_meta(<%= "@#{plural_table_name}" %>)
   end
 
   def show
-    render_default! <%= "@#{singular_table_name}" %>
+    default! <%= "@#{singular_table_name}" %>
   end
 
   def create

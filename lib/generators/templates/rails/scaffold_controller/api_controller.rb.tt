@@ -3,8 +3,8 @@ require_dependency "<%= namespaced_path %>/application_controller"
 
 <% end -%>
 <% module_namespacing do -%>
-class <%=controller_class_name %>Controller < ApplicationController
-	load_and_authorize_resources
+class V1::<%=controller_class_name %>Controller < ApplicationController
+	load_and_authorize_resource
 
   def index
 	  @<%= plural_table_name %> = @<%= plural_table_name %>.query_by(params)
@@ -28,21 +28,20 @@ class <%=controller_class_name %>Controller < ApplicationController
   end
 
   private
-    # Only allow a list of trusted parameters through.
-    def <%= "update_params" %>
-      <%- if attributes_names.empty? -%>
-      params.fetch(:<%= singular_table_name %>, {})
-      <%- else -%>
-      params.permit(<%= permitted_params %>)
-      <%- end -%>
-    end
+  def <%= "update_params" %>
+    <%- if attributes_names.empty? -%>
+    params.fetch(:<%= singular_table_name %>, {})
+    <%- else -%>
+    params.permit(<%= permitted_params %>)
+    <%- end -%>
+  end
 
-		def <%= "create_params" %>
-      <%- if attributes_names.empty? -%>
-      params.fetch(:<%= singular_table_name %>, {})
-      <%- else -%>
-      params.permit(<%= permitted_params %>)
-      <%- end -%>
-    end
+	def <%= "create_params" %>
+    <%- if attributes_names.empty? -%>
+    params.fetch(:<%= singular_table_name %>, {})
+    <%- else -%>
+    params.permit(<%= permitted_params %>)
+    <%- end -%>
+  end
 end
 <% end -%>

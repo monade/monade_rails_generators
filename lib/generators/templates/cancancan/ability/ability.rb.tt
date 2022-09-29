@@ -1,0 +1,17 @@
+# frozen_string_literal: true
+
+class Ability
+  include CanCan::Ability
+
+  def initialize(user)
+    # TODO: Insert here abilities for non-authenticated users
+    # can :read, Comment
+
+    define_authenticated_abilities!(user) if user
+  end
+
+  def define_authenticated_abilities!(user)
+    # TODO: Fill here. Example:
+    # can :manage, User, id: user.id
+  end
+end

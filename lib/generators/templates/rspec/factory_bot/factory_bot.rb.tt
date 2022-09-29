@@ -7,12 +7,15 @@ FactoryBot.define do
     association(:<%= attribute.name %>)
 <% end -%>
 <% attributes.select{|attr| attr.type==:string || attr.type==:text}.each do |attribute| -%>
-    sequence(:<%= attribute.name %>) {|n| "attr.name.capitalize #{n}"}
+    sequence(:<%= attribute.name %>) { |n| "<%= attribute.name.capitalize.gsub('_', ' ') %> #{n}" }
 <% end -%>
 <% attributes.select{ |attr| attr.type ==:integer || attr.type==:float || attr.type==:decimal}.each do |attribute| -%>
-    <%= attribute.name %> { 0 }
+    sequence(:<%= attribute.name %>) { |n| n }
 <% end -%>
-<% attributes.select{ |attr| !(%i[integer float decimal string text].include?(attr.type) || attr.reference? || attr.name == 'id')}.each do |attribute| -%>
+<% attributes.select{ |attr| attr.type==:boolean }.each do |attribute| -%>
+    sequence(:<%= attribute.name %>) { |n| n.even? }
+<% end -%>
+<% attributes.select{ |attr| !(%i[integer float decimal string text boolean].include?(attr.type) || attr.reference? || attr.name == 'id')}.each do |attribute| -%>
     <%= attribute.name %> { nil }
 <% end -%>
   end
