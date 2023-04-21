@@ -5,6 +5,7 @@ RSpec.describe 'V1::<%= class_name.pluralize %>', type: :request do
 
   path '/v1/<%= class_name.pluralize.underscore %>' do
     get 'when running a GET request' do
+      tags "<%= class_name.pluralize.underscore %>"
       define_json_api_params!(pagination: true)
       let(:'page[size]') { 2 }
 
@@ -35,6 +36,7 @@ RSpec.describe 'V1::<%= class_name.pluralize %>', type: :request do
     end
 
     post 'when running a POST request' do
+      tags "<%= class_name.pluralize.underscore %>"
       define_json_api_params!
 
       parameter name: :params, in: :body, schema: {
@@ -105,6 +107,7 @@ RSpec.describe 'V1::<%= class_name.pluralize %>', type: :request do
     let!(:id) { create(:<%= class_name.underscore %>).id }
 
     get 'when running a GET request' do
+      tags "<%= class_name.pluralize.underscore %>"
       define_json_api_params!
 
       response '200', 'Returns the details of a <%= class_name.downcase.humanize %>' do
@@ -138,6 +141,7 @@ RSpec.describe 'V1::<%= class_name.pluralize %>', type: :request do
 
 
     delete 'when running a DELETE request' do
+      tags "<%= class_name.pluralize.underscore %>"
       define_json_api_params!
 
       let!(:<%= class_name.underscore %>) { create(:<%= class_name.underscore %>) }
@@ -154,6 +158,7 @@ RSpec.describe 'V1::<%= class_name.pluralize %>', type: :request do
     end
 
     put 'when running a PUT request' do
+      tags "<%= class_name.pluralize.underscore %>"
       define_json_api_params!
 
       parameter name: :params, in: :body, schema: {
