@@ -3,8 +3,8 @@ require_dependency "<%= namespaced_path %>/application_controller"
 
 <% end -%>
 <% module_namespacing do -%>
-class V1::<%=controller_class_name %>Controller < ApplicationController
-  load_and_authorize_resource
+class V1::<%= class_name %>Controller < ApplicationController
+  load_and_authorize_resource<%= regular_class_path.empty? ? '' : "(class: '#{class_name}')" %>
 
   def index
     @<%= plural_table_name %> = @<%= plural_table_name %>.query_by(params)

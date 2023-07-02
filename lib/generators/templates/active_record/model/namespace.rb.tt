@@ -1,0 +1,5 @@
+module <%= regular_class_path[0].classify %>
+  def self.table_name_prefix
+    '<%= regular_class_path.join('_') %>_'
+  end
+end
