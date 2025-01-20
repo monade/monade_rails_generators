@@ -32,7 +32,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib", "lib/monade/rails/generators"]
 
   # Uncomment to register a new dependency of your gem
-  spec.add_dependency "rails", "~> 7.0"
+  spec.add_dependency "rails", ">= 7.0", "< 9.0"
 
   # For more information and examples about making a new gem, checkout our
   # guide at: https://bundler.io/guides/creating_gem.html

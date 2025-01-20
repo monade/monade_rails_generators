@@ -2,6 +2,10 @@
 
 All notable changes to this project made by Monade Team are documented in this file. For info refer to team@monade.io
 
+## [0.3.0] - 2025-01-20
+### Added
+- Support for Rails 8.0
+
 ## [0.2.1] - 2023-10-18
 ### Fixed
 - added missing # frozen_string_literal: true comment to all files
